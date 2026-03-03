@@ -1,0 +1,177 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: white;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.view-toggle {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.view-toggle button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.view-toggle button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.view-toggle button.active {
+  background: white;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.loading,
+.error,
+.no-data {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.error {
+  color: #e74c3c;
+}
+
+.today-view {
+  display: flex;
+  justify-content: center;
+}
+
+.meal-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.meal-card:hover {
+  transform: translateY(-5px);
+}
+
+.meal-card.today {
+  width: 100%;
+  max-width: 600px;
+}
+
+.meal-card h2 {
+  color: #667eea;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+}
+
+.meal-card h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+}
+
+.meal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.meal-time {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #667eea;
+}
+
+.meal-time h3 {
+  margin-bottom: 8px;
+  color: #667eea;
+}
+
+.meal-time strong {
+  color: #667eea;
+  margin-right: 8px;
+}
+
+.meal-time p {
+  line-height: 1.6;
+  color: #333;
+}
+
+.weekly-view {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.week-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.week-card h2 {
+  color: #667eea;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 10px;
+}
+
+.meals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 2rem;
+  }
+
+  .meals-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .meal-card {
+    padding: 20px;
+  }
+}
