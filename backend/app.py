@@ -14,72 +14,54 @@ def load_meal_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
-    return {"meals": []}
+    return {"weeks": []}
 
 def save_meal_data(data):
     """식단 데이터를 JSON 파일에 저장"""
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-def get_week_number(date):
-    """날짜로부터 주차 계산 (월요일 시작)"""
-    return date.isocalendar()[1]
-
-def get_today_meal():
-    """오늘의 식단 찾기"""
+def get_current_week():
+    """현재 주차 식단 찾기"""
     data = load_meal_data()
-    today = datetime.now().strftime('%Y-%m-%d')
 
-    for meal in data['meals']:
-        if meal['date'] == today:
-            return meal
+    # 실제 날짜 사용
+    now = datetime.now()
+
+    current_year = now.year
+    current_month = now.month
+
+    # 월 기준 주차 계산: 1일부터 7일까지를 1주차, 8일부터 14일까지를 2주차로 계산
+    current_week = ((now.day - 1) // 7) + 1
+
+    print(f"현재 날짜: {now.year}년 {now.month}월 {now.day}일 → {now.month}월 {current_week}주차")
+
+    for week in data['weeks']:
+        if week['year'] == current_year and week['month'] == current_month and week['week'] == current_week:
+            print(f"매칭된 식단표 발견: {week['title']}")
+            return week
+
+    print(f"해당 주차({current_year}년 {current_month}월 {current_week}주차) 식단표를 찾을 수 없습니다.")
     return None
 
-def get_meals_by_week():
-    """주차별로 식단 그룹화"""
+def get_all_weeks():
+    """모든 주간 식단표 반환"""
     data = load_meal_data()
-    weeks = {}
+    return data['weeks']
 
-    for meal in data['meals']:
-        meal_date = datetime.strptime(meal['date'], '%Y-%m-%d')
-        week_num = get_week_number(meal_date)
-        year = meal_date.year
-        week_key = f"{year}-W{week_num:02d}"
-
-        if week_key not in weeks:
-            weeks[week_key] = {
-                'week': week_key,
-                'year': year,
-                'week_number': week_num,
-                'meals': []
-            }
-        weeks[week_key]['meals'].append(meal)
-
-    # 날짜순 정렬
-    for week in weeks.values():
-        week['meals'].sort(key=lambda x: x['date'])
-
-    return sorted(weeks.values(), key=lambda x: x['week'], reverse=True)
-
-@app.route('/api/today', methods=['GET'])
-def today_meal():
-    """오늘의 식단 조회 API"""
-    meal = get_today_meal()
-    if meal:
-        return jsonify(meal)
-    return jsonify({'error': '오늘의 식단이 없습니다'}), 404
+@app.route('/api/this-week', methods=['GET'])
+def this_week():
+    """현재 주차 식단표 조회 API"""
+    week = get_current_week()
+    if week:
+        return jsonify(week)
+    return jsonify({'error': '현재 주차 식단표가 없습니다'}), 404
 
 @app.route('/api/weeks', methods=['GET'])
-def weeks_meals():
-    """주차별 식단 조회 API"""
-    weeks = get_meals_by_week()
+def weeks_list():
+    """모든 주간 식단표 조회 API"""
+    weeks = get_all_weeks()
     return jsonify(weeks)
-
-@app.route('/api/meals', methods=['GET'])
-def all_meals():
-    """모든 식단 조회 API"""
-    data = load_meal_data()
-    return jsonify(data['meals'])
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

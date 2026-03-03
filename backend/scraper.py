@@ -7,12 +7,21 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 import json
 import time
+import re
 from datetime import datetime
 
 class KakaoChannelScraper:
     def __init__(self, channel_url):
         self.channel_url = channel_url
-        self.meals = []
+        self.weeks = []
+
+        # CSS 선택자 설정 (카카오 채널 실제 HTML 구조 기반)
+        self.selectors = {
+            'post_item': 'div.area_card',
+            'post_title': 'strong.tit_card',
+            'post_image': 'div.wrap_fit_thumb',
+            'post_date': 'span.txt_date'
+        }
 
     def setup_driver(self):
         """Selenium WebDriver 설정"""
@@ -41,88 +50,126 @@ class KakaoChannelScraper:
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 time.sleep(2)
 
+            # 디버그: 페이지 소스 저장
+            with open('page_source_debug.html', 'w', encoding='utf-8') as f:
+                f.write(driver.page_source)
+            print("디버그: page_source_debug.html 파일 저장 완료")
+
             # 게시물 파싱
             soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-            # 여기서 실제 카카오톡 채널 구조에 맞게 선택자를 수정해야 합니다
-            # 아래는 예시 구조입니다
-            posts = soup.find_all('div', class_='post')  # 실제 클래스명으로 변경 필요
+            # area_card 클래스를 가진 모든 div 찾기
+            posts = soup.find_all('div', class_='area_card')
 
             print(f"발견된 게시물: {len(posts)}개")
 
             for post in posts:
-                meal_data = self.parse_meal_post(post)
-                if meal_data:
-                    self.meals.append(meal_data)
+                week_data = self.parse_week_post(post)
+                if week_data:
+                    self.weeks.append(week_data)
 
         except Exception as e:
             print(f"스크래핑 오류: {e}")
+            import traceback
+            traceback.print_exc()
 
         finally:
             driver.quit()
 
-        return self.meals
+        return self.weeks
 
-    def parse_meal_post(self, post):
-        """게시물에서 식단 정보 추출"""
+    def parse_week_post(self, post):
+        """게시물에서 주간 식단표 정보 추출"""
         try:
-            # 실제 카카오톡 채널 구조에 맞게 수정 필요
-            # 아래는 예시 파싱 로직입니다
+            # 제목 추출
+            title_elem = post.find('strong', class_='tit_card')
 
-            text = post.get_text(strip=True)
+            if not title_elem:
+                return None
 
-            # 날짜 추출 (예: "2026년 3월 3일" 형식)
-            # 실제 게시물 형식에 맞게 수정 필요
-            date_str = self.extract_date(text)
+            title = title_elem.get_text(strip=True)
 
-            # 식단 메뉴 추출
-            menu = self.extract_menu(text)
+            # "[주간식단표]"로 시작하는 게시물만 필터링
+            if not title.startswith('[주간식단표]'):
+                return None
 
-            if date_str and menu:
-                return {
-                    'date': date_str,
-                    'breakfast': menu.get('breakfast', ''),
-                    'lunch': menu.get('lunch', ''),
-                    'dinner': menu.get('dinner', ''),
-                    'raw_text': text
-                }
+            print(f"주간식단표 발견: {title}")
+
+            # 제목에서 월, 주차 추출 (예: "[주간식단표] 3월 1주차")
+            pattern = r'\[주간식단표\]\s*(\d+)월\s*(\d+)주차'
+            match = re.search(pattern, title)
+
+            if not match:
+                print(f"제목 파싱 실패: {title}")
+                return None
+
+            month = int(match.group(1))
+            week = int(match.group(2))
+            year = datetime.now().year
+
+            # 이미지 URL 추출 (div.wrap_fit_thumb의 background-image에서)
+            image_div = post.find('div', class_='wrap_fit_thumb')
+            image_url = None
+
+            if image_div and image_div.get('style'):
+                style = image_div.get('style')
+                # background-image: url("https://..."); 형식에서 URL 추출
+                import re as regex
+                url_match = regex.search(r'url\(["\']?([^"\']+)["\']?\)', style)
+                if url_match:
+                    image_url = url_match.group(1)
+
+            if not image_url:
+                print(f"이미지를 찾을 수 없음: {title}")
+                return None
+
+            # ID 생성 (중복 방지)
+            week_id = f"{year}-{month:02d}-w{week}"
+
+            # 중복 확인
+            if any(w['id'] == week_id for w in self.weeks):
+                print(f"중복 데이터: {week_id}")
+                return None
+
+            return {
+                'id': week_id,
+                'title': title,
+                'year': year,
+                'month': month,
+                'week': week,
+                'image_url': image_url,
+                'posted_date': datetime.now().strftime('%Y-%m-%d'),
+                'scraped_at': datetime.now().isoformat()
+            }
 
         except Exception as e:
             print(f"게시물 파싱 오류: {e}")
+            import traceback
+            traceback.print_exc()
 
         return None
 
-    def extract_date(self, text):
-        """텍스트에서 날짜 추출"""
-        # 실제 게시물 형식에 맞게 정규식이나 파싱 로직 구현 필요
-        # 예시: "2026-03-03" 형식으로 반환
-        return datetime.now().strftime('%Y-%m-%d')
-
-    def extract_menu(self, text):
-        """텍스트에서 식단 메뉴 추출"""
-        # 실제 게시물 형식에 맞게 파싱 로직 구현 필요
-        return {
-            'breakfast': '조식 메뉴',
-            'lunch': '중식 메뉴',
-            'dinner': '석식 메뉴'
-        }
-
     def save_to_json(self, filename='meal_data.json'):
         """스크래핑한 데이터를 JSON 파일로 저장"""
+        # 주차별로 정렬 (최신순)
+        sorted_weeks = sorted(self.weeks, key=lambda x: (x['year'], x['month'], x['week']), reverse=True)
+
         data = {
             'last_updated': datetime.now().isoformat(),
-            'meals': self.meals
+            'weeks': sorted_weeks
         }
 
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
-        print(f"데이터 저장 완료: {filename} ({len(self.meals)}개 식단)")
+        print(f"데이터 저장 완료: {filename} ({len(self.weeks)}개 주간식단표)")
 
 if __name__ == '__main__':
     # 스크래핑 실행
     scraper = KakaoChannelScraper('https://pf.kakao.com/_xbzpvb/posts')
-    meals = scraper.scrape_posts()
+    weeks = scraper.scrape_posts()
     scraper.save_to_json()
 
-    print(f"\n총 {len(meals)}개의 식단을 수집했습니다.")
+    print(f"\n총 {len(weeks)}개의 주간식단표를 수집했습니다.")
+    for week in weeks:
+        print(f"  - {week['title']} (이미지: {week['image_url'][:50]}...)")

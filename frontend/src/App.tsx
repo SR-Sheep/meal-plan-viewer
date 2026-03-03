@@ -1,29 +1,26 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-interface Meal {
-  date: string
-  breakfast: string
-  lunch: string
-  dinner: string
-  raw_text?: string
-}
-
-interface Week {
-  week: string
+interface MealWeek {
+  id: string
+  title: string
   year: number
-  week_number: number
-  meals: Meal[]
+  month: number
+  week: number
+  image_url: string
+  posted_date: string
+  scraped_at: string
 }
 
 function App() {
-  const [todayMeal, setTodayMeal] = useState<Meal | null>(null)
-  const [weeks, setWeeks] = useState<Week[]>([])
+  const [currentWeek, setCurrentWeek] = useState<MealWeek | null>(null)
+  const [weeks, setWeeks] = useState<MealWeek[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<'today' | 'weekly'>('today')
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
-  const API_BASE = 'http://localhost:5000/api'
+  const API_BASE = '/api'
 
   useEffect(() => {
     fetchData()
@@ -34,14 +31,14 @@ function App() {
       setLoading(true)
       setError(null)
 
-      // 오늘의 식단 조회
-      const todayRes = await fetch(`${API_BASE}/today`)
-      if (todayRes.ok) {
-        const todayData = await todayRes.json()
-        setTodayMeal(todayData)
+      // 현재 주차 식단 조회
+      const thisWeekRes = await fetch(`${API_BASE}/this-week`)
+      if (thisWeekRes.ok) {
+        const thisWeekData = await thisWeekRes.json()
+        setCurrentWeek(thisWeekData)
       }
 
-      // 주차별 식단 조회
+      // 모든 주차 식단 조회
       const weeksRes = await fetch(`${API_BASE}/weeks`)
       const weeksData = await weeksRes.json()
       setWeeks(weeksData)
@@ -54,10 +51,8 @@ function App() {
     }
   }
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-    return `${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdays[date.getDay()]})`
+  const handleImageError = (weekId: string) => {
+    setImageErrors(prev => new Set(prev).add(weekId))
   }
 
   if (loading) {
@@ -71,85 +66,78 @@ function App() {
   return (
     <div className="container">
       <header>
-        <h1>🍽️ 식단표</h1>
+        <h1>🍽️ 주간 식단표</h1>
         <div className="view-toggle">
           <button
             className={view === 'today' ? 'active' : ''}
             onClick={() => setView('today')}
           >
-            오늘의 식단
+            이번주 식단
           </button>
           <button
             className={view === 'weekly' ? 'active' : ''}
             onClick={() => setView('weekly')}
           >
-            주차별 보기
+            전체 보기
           </button>
         </div>
       </header>
 
       {view === 'today' ? (
         <div className="today-view">
-          {todayMeal ? (
-            <div className="meal-card today">
-              <h2>오늘의 식단 ({formatDate(todayMeal.date)})</h2>
-              <div className="meal-content">
-                {todayMeal.breakfast && (
-                  <div className="meal-time">
-                    <h3>🌅 아침</h3>
-                    <p>{todayMeal.breakfast}</p>
+          {currentWeek ? (
+            <div className="week-card featured">
+              <h2>{currentWeek.title}</h2>
+              <div className="week-image-container">
+                {imageErrors.has(currentWeek.id) ? (
+                  <div className="image-error">
+                    <p>이미지를 불러올 수 없습니다</p>
+                    <small>{currentWeek.image_url}</small>
                   </div>
+                ) : (
+                  <img
+                    src={currentWeek.image_url}
+                    alt={currentWeek.title}
+                    loading="lazy"
+                    onError={() => handleImageError(currentWeek.id)}
+                  />
                 )}
-                {todayMeal.lunch && (
-                  <div className="meal-time">
-                    <h3>☀️ 점심</h3>
-                    <p>{todayMeal.lunch}</p>
-                  </div>
-                )}
-                {todayMeal.dinner && (
-                  <div className="meal-time">
-                    <h3>🌙 저녁</h3>
-                    <p>{todayMeal.dinner}</p>
-                  </div>
-                )}
+              </div>
+              <div className="week-meta">
+                <span>{currentWeek.year}년 {currentWeek.month}월 {currentWeek.week}주차</span>
               </div>
             </div>
           ) : (
-            <div className="no-data">오늘의 식단이 없습니다.</div>
+            <div className="no-data">이번주 식단표가 없습니다.</div>
           )}
         </div>
       ) : (
         <div className="weekly-view">
           {weeks.length > 0 ? (
-            weeks.map((week) => (
-              <div key={week.week} className="week-card">
-                <h2>{week.year}년 {week.week_number}주차</h2>
-                <div className="meals-grid">
-                  {week.meals.map((meal) => (
-                    <div key={meal.date} className="meal-card">
-                      <h3>{formatDate(meal.date)}</h3>
-                      <div className="meal-content">
-                        {meal.breakfast && (
-                          <div className="meal-time">
-                            <strong>아침:</strong> {meal.breakfast}
-                          </div>
-                        )}
-                        {meal.lunch && (
-                          <div className="meal-time">
-                            <strong>점심:</strong> {meal.lunch}
-                          </div>
-                        )}
-                        {meal.dinner && (
-                          <div className="meal-time">
-                            <strong>저녁:</strong> {meal.dinner}
-                          </div>
-                        )}
+            <div className="weeks-grid">
+              {weeks.map((week) => (
+                <div key={week.id} className="week-card">
+                  <h3>{week.title}</h3>
+                  <div className="week-image-container">
+                    {imageErrors.has(week.id) ? (
+                      <div className="image-error">
+                        <p>이미지를 불러올 수 없습니다</p>
                       </div>
-                    </div>
-                  ))}
+                    ) : (
+                      <img
+                        src={week.image_url}
+                        alt={week.title}
+                        loading="lazy"
+                        onError={() => handleImageError(week.id)}
+                      />
+                    )}
+                  </div>
+                  <div className="week-meta">
+                    <span>{week.year}년 {week.month}월 {week.week}주차</span>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           ) : (
             <div className="no-data">식단 데이터가 없습니다.</div>
           )}
