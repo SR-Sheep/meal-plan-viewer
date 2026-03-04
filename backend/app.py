@@ -1,11 +1,18 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from datetime import datetime, timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
 import json
 import os
+import logging
 
 app = Flask(__name__)
 CORS(app)
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 DATA_FILE = 'meal_data.json'
 
@@ -49,6 +56,22 @@ def get_all_weeks():
     data = load_meal_data()
     return data['weeks']
 
+def run_scraper():
+    """스크래퍼 실행 함수"""
+    try:
+        logger.info("스크래핑 시작...")
+        from scraper import KakaoChannelScraper
+
+        scraper = KakaoChannelScraper('https://pf.kakao.com/_xbzpvb/posts')
+        weeks = scraper.scrape_posts()
+        scraper.save_to_json()
+
+        logger.info(f"스크래핑 완료: {len(weeks)}개의 주간식단표 수집")
+    except Exception as e:
+        logger.error(f"스크래핑 오류: {e}")
+        import traceback
+        traceback.print_exc()
+
 @app.route('/api/this-week', methods=['GET'])
 def this_week():
     """현재 주차 식단표 조회 API"""
@@ -69,4 +92,27 @@ def health_check():
     return jsonify({'status': 'ok', 'message': 'Server is running'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # 스케줄러 설정
+    scheduler = BackgroundScheduler()
+
+    # 서버 시작 시 즉시 스크래핑 실행
+    logger.info("서버 시작 시 스크래핑 실행...")
+    run_scraper()
+
+    # 매주 월요일 오전 8시에 스크래핑 실행
+    scheduler.add_job(
+        func=run_scraper,
+        trigger=CronTrigger(day_of_week='mon', hour=8, minute=0),
+        id='weekly_scraper',
+        name='매주 월요일 8시 스크래핑',
+        replace_existing=True
+    )
+
+    scheduler.start()
+    logger.info("스케줄러 시작: 매주 월요일 오전 8시에 스크래핑 실행")
+
+    try:
+        app.run(debug=True, host='0.0.0.0', port=15000, use_reloader=False)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
+        logger.info("스케줄러 종료")
