@@ -105,7 +105,13 @@ class KakaoChannelScraper:
 
             month = int(match.group(1))
             week = int(match.group(2))
-            year = datetime.now().year
+
+            # 년도 판별: 현재 월보다 미래 월이면 작년 데이터로 간주
+            now = datetime.now()
+            year = now.year
+            # 예: 현재 3월인데 12월 데이터면 작년(2025년)
+            if month > now.month + 3:  # 3개월 이상 차이나면 작년으로 판단
+                year -= 1
 
             # 이미지 URL 추출 (div.wrap_fit_thumb의 background-image에서)
             image_div = post.find('div', class_='wrap_fit_thumb')
@@ -151,7 +157,7 @@ class KakaoChannelScraper:
 
     def save_to_json(self, filename='meal_data.json'):
         """스크래핑한 데이터를 JSON 파일로 저장"""
-        # 주차별로 정렬 (최신순)
+        # 년-월-주차 기준 내림차순 정렬 (최신순)
         sorted_weeks = sorted(self.weeks, key=lambda x: (x['year'], x['month'], x['week']), reverse=True)
 
         data = {
