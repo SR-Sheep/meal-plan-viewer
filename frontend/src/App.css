@@ -21,8 +21,13 @@ body {
 
 header {
   text-align: center;
+  padding-bottom: 20px;
   margin-bottom: 40px;
   color: #e0e0e0;
+  position: sticky;
+  top: 0;
+  background: #2c2c2c;
+  z-index: 100;
 }
 
 header h1 {
