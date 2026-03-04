@@ -77,6 +77,8 @@ header h1 {
 }
 
 .today-view {
+  display: flex;
+  justify-content: center;
   width: 100%;
 }
 
