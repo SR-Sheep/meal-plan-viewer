@@ -19,6 +19,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<'today' | 'weekly'>('today')
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
+  const [zoomedImage, setZoomedImage] = useState<{ url: string; title: string } | null>(null)
 
   const API_BASE = '/api'
 
@@ -129,6 +130,8 @@ function App() {
                         alt={week.title}
                         loading="lazy"
                         onError={() => handleImageError(week.id)}
+                        onClick={() => setZoomedImage({ url: week.image_url, title: week.title })}
+                        style={{ cursor: 'pointer' }}
                       />
                     )}
                   </div>
@@ -141,6 +144,17 @@ function App() {
           ) : (
             <div className="no-data">식단 데이터가 없습니다.</div>
           )}
+        </div>
+      )}
+
+      {/* 이미지 확대 모달 */}
+      {zoomedImage && (
+        <div className="image-modal" onClick={() => setZoomedImage(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setZoomedImage(null)}>×</button>
+            <h3>{zoomedImage.title}</h3>
+            <img src={zoomedImage.url} alt={zoomedImage.title} />
+          </div>
         </div>
       )}
     </div>
