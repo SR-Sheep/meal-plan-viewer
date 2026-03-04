@@ -125,10 +125,14 @@ header h1 {
   overflow-y: auto;
   overflow-x: hidden;
   background: #f8f9fa;
-  max-height: 376px;
+  max-height: 600px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
+}
+
+.week-card.featured .week-image-container {
+  max-height: 500px;
 }
 
 .week-image-container img {
