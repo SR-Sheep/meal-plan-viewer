@@ -11,9 +11,6 @@ body {
   background: #2c2c2c;
   min-height: 100vh;
   padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
 .container {
@@ -80,9 +77,6 @@ header h1 {
 }
 
 .today-view {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   width: 100%;
 }
 
