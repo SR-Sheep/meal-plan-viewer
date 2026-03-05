@@ -10,19 +10,22 @@ body {
     sans-serif;
   background: #2c2c2c;
   min-height: 100vh;
-  padding: 20px;
 }
 
 .container {
   max-width: 1200px;
-  width: 100%;
   margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Header */
 header {
   text-align: center;
-  padding-bottom: 20px;
-  margin-bottom: 40px;
+  padding: 20px 20px 20px;
+  margin: -20px -20px 40px;
   color: #e0e0e0;
   position: sticky;
   top: 0;
@@ -33,7 +36,6 @@ header {
 header h1 {
   font-size: 2.5rem;
   margin-bottom: 20px;
-  text-shadow: none;
   font-weight: 700;
 }
 
@@ -67,6 +69,7 @@ header h1 {
   font-weight: bold;
 }
 
+/* Loading, Error, No Data */
 .loading,
 .error,
 .no-data {
@@ -81,12 +84,14 @@ header h1 {
   color: #e74c3c;
 }
 
+/* Today View */
 .today-view {
+  flex: 1;
   display: flex;
-  justify-content: center;
-  width: 100%;
+  flex-direction: column;
 }
 
+/* Week Card */
 .week-card {
   background: white;
   border-radius: 20px;
@@ -100,25 +105,28 @@ header h1 {
 }
 
 .week-card.featured {
-  width: 100%;
-  max-width: 1170px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.week-card h2,
+.week-card h3 {
+  color: #667eea;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .week-card h2 {
-  color: #667eea;
-  margin-bottom: 20px;
   font-size: 1.8rem;
-  text-align: center;
 }
 
 .week-card h3 {
-  color: #667eea;
-  margin-bottom: 15px;
   font-size: 1.3rem;
-  text-align: center;
+  margin-bottom: 15px;
 }
 
+/* Week Image Container */
 .week-image-container {
   width: 100%;
   border-radius: 15px;
@@ -132,7 +140,8 @@ header h1 {
 }
 
 .week-card.featured .week-image-container {
-  max-height: 500px;
+  flex: 1;
+  max-height: none;
 }
 
 .week-image-container img {
@@ -166,6 +175,7 @@ header h1 {
   font-size: 0.95rem;
 }
 
+/* Weekly View */
 .weekly-view {
   width: 100%;
 }
@@ -176,7 +186,7 @@ header h1 {
   gap: 30px;
 }
 
-/* 이미지 확대 모달 */
+/* Image Modal */
 .image-modal {
   position: fixed;
   top: 0;
@@ -193,12 +203,8 @@ header h1 {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
@@ -259,6 +265,7 @@ header h1 {
   transform: scale(1.2);
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   header h1 {
     font-size: 2rem;

@@ -1,0 +1,7 @@
+{
+  "name": "meal-plan-viewer",
+  "version": "1.0.0",
+  "scripts": {
+    "run": "cd frontend && npm run dev"
+  }
+}
