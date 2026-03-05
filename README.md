@@ -6,8 +6,10 @@
 
 - 📅 **이번주 식단**: 오늘 날짜를 기준으로 현재 주차의 식단표를 자동으로 표시
 - 📋 **전체 보기**: 수집된 모든 주간 식단표를 한눈에 확인
+- 📌 **고정 헤더**: 스크롤 시 상단에 고정되는 네비게이션
 - 🔄 **자동 크롤링**: Selenium을 이용한 카카오톡 채널 자동 스크래핑
-- 🎨 **깔끔한 UI**: 다크 테마의 현대적인 인터페이스
+- 🎨 **깔끔한 UI**: 다크 테마의 현대적이고 간결한 인터페이스
+- 🔍 **이미지 확대**: 클릭하여 식단표 이미지를 크게 볼 수 있음
 
 ## 기술 스택
 
@@ -30,44 +32,63 @@ meal-plan-viewer/
 ├── backend/
 │   ├── app.py              # Flask API 서버
 │   ├── scraper.py          # 카카오톡 채널 스크래퍼
-│   └── meal_data.json      # 식단 데이터 저장소
+│   ├── meal_data.json      # 식단 데이터 저장소
+│   └── requirements.txt    # Python 의존성
 ├── frontend/
 │   ├── src/
 │   │   ├── App.tsx         # 메인 React 컴포넌트
 │   │   └── App.css         # 스타일시트
-│   └── vite.config.ts      # Vite 설정
+│   ├── vite.config.ts      # Vite 설정
+│   └── package.json        # npm 의존성
+├── run.bat                 # 서버 실행 스크립트 (Windows)
 └── README.md
 ```
 
 ## 설치 및 실행
 
-### 1. 저장소 클론
+### 빠른 시작 (Windows)
+
+```bash
+git clone https://github.com/SR-Sheep/meal-plan-viewer.git
+cd meal-plan-viewer
+
+# 의존성 설치
+cd backend
+pip install -r requirements.txt
+cd ../frontend
+npm install
+cd ..
+
+# 서버 실행 (백엔드 + 프론트엔드 동시 실행)
+run
+```
+
+`run.bat` 파일이 자동으로:
+- 기존 실행 중인 서버를 종료하고
+- 백엔드(Flask)와 프론트엔드(Vite)를 동시에 실행합니다
+
+### 수동 설치 및 실행
+
+#### 1. 저장소 클론
 
 ```bash
 git clone https://github.com/SR-Sheep/meal-plan-viewer.git
 cd meal-plan-viewer
 ```
 
-### 2. Backend 설정
+#### 2. Backend 설정
 
 ```bash
 cd backend
 
-# 가상환경 생성 (선택사항)
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
 # 의존성 설치
-pip install flask flask-cors selenium beautifulsoup4
-
-# Chrome WebDriver 설치 필요
-# https://chromedriver.chromium.org/downloads
+pip install -r requirements.txt
 
 # Flask 서버 실행 (포트 5000)
 python app.py
 ```
 
-### 3. Frontend 설정
+#### 3. Frontend 설정
 
 ```bash
 cd frontend
@@ -79,7 +100,7 @@ npm install
 npm run dev
 ```
 
-### 4. 스크래핑 실행
+#### 4. 스크래핑 실행
 
 ```bash
 cd backend
