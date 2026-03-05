@@ -10,11 +10,13 @@ body {
     sans-serif;
   background: #2c2c2c;
   min-height: 100vh;
+  display: flex;
+  justify-content: center;
 }
 
 .container {
   max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 20px;
   min-height: 100vh;
   display: flex;
@@ -24,19 +26,13 @@ body {
 /* Header */
 header {
   text-align: center;
-  padding: 20px 20px 20px;
-  margin: -20px -20px 40px;
+  padding: 15px 20px;
+  margin: -20px -20px 20px;
   color: #e0e0e0;
   position: sticky;
   top: 0;
   background: #2c2c2c;
   z-index: 100;
-}
-
-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
-  font-weight: 700;
 }
 
 .view-toggle {
@@ -46,12 +42,12 @@ header h1 {
 }
 
 .view-toggle button {
-  padding: 12px 24px;
+  padding: 8px 20px;
   border: 2px solid #444;
-  border-radius: 25px;
+  border-radius: 20px;
   background: #1a1a1a;
   color: #ccc;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }

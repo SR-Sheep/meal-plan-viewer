@@ -67,7 +67,6 @@ function App() {
   return (
     <div className="container">
       <header>
-        <h1>🍽️ 주간 식단표</h1>
         <div className="view-toggle">
           <button
             className={view === 'today' ? 'active' : ''}
